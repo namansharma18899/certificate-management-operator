@@ -1,0 +1,27 @@
+# This rule is not used by the project certificate-management-operator itself.
+# It is provided to allow the cluster admin to help manage permissions for users.
+#
+# Grants full permissions ('*') over cert.example.com.
+# This role is intended for users authorized to modify roles and bindings within the cluster,
+# enabling them to delegate specific permissions to other users or groups as needed.
+
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  labels:
+    app.kubernetes.io/name: certificate-management-operator
+    app.kubernetes.io/managed-by: kustomize
+  name: certificate-admin-role
+rules:
+- apiGroups:
+  - cert.example.com
+  resources:
+  - certificates
+  verbs:
+  - '*'
+- apiGroups:
+  - cert.example.com
+  resources:
+  - certificates/status
+  verbs:
+  - get

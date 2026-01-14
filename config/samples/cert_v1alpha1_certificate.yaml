@@ -1,0 +1,28 @@
+# To Whoever it may concern, this is a sample cerfiticate !!
+# Nowhereeeee in hell try to use this in a produciton Environmant, even God won't save you !!
+
+apiVersion: cert.example.com/v1alpha1
+kind: Certificate
+metadata:
+  labels:
+    app.kubernetes.io/name: certificate
+    app.kubernetes.io/instance: certificate-sample
+    app.kubernetes.io/part-of: certificate-operator
+    app.kubernetes.io/managed-by: kustomize
+    app.kubernetes.io/created-by: certificate-operator
+  name: certificate-sample
+spec:
+  commonName: myapp.example.com
+  dnsNames:
+    - myapp.example.com
+    - www.myapp.example.com
+    - api.myapp.example.com
+  ipAddresses:
+    - 192.168.1.100
+  secretName: myapp-tls
+  duration: "2160h"    # 90 days
+  renewBefore: "720h"   # Renew 30 days before expiry
+  restartDeployments: true
+  issuerRef:
+    name: self-signed
+    kind: SelfSigned
