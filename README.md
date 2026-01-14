@@ -1,7 +1,9 @@
-# certificate-management-operator
-A controller for Certificate resources that integrates with cert-manager or handles internal PKI, automatically rotating certificates, updating secrets, and triggering rolling restarts of affected deployments. Relevant for security-focused roles.
-
+<div align='center'>
+<img src="assets/logo.png" width=50%  height=200px>
 <hr>
+
+### **certificate-management-operator**
+A controller for Certificate resources that integrates with cert-manager or handles internal PKI, automatically rotating certificates, updating secrets, and triggering rolling restarts of affected deployments. Relevant for security-focused roles.
 
 ![Code Size](https://img.shields.io/github/languages/code-size/namansharma18899/certificate-management-operator)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/namansharma18899/certificate-management-operator/blob/main/LICENSE)
@@ -10,6 +12,7 @@ A controller for Certificate resources that integrates with cert-manager or hand
 [![Last Commit](https://img.shields.io/github/last-commit/namansharma18899/certificate-management-operator)](https://github.com/namansharma18899/certificate-management-operator/commits/main)
 
 *If you like my work a ⭐ would mean the world*
+</div>
 
 ---
 
