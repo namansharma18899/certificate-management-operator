@@ -1,0 +1,92 @@
+# Renewal scenario: short-lived cert so the controller renews and restarts the deployment.
+# Use only for testing. Certificate is valid 5m, renewal triggered 2m before expiry (~3m from issuance).
+---
+apiVersion: cert.example.com/v1alpha1
+kind: Certificate
+metadata:
+  name: certificate-renewal-demo
+  labels:
+    app.kubernetes.io/name: certificate
+    app.kubernetes.io/instance: certificate-renewal-demo
+spec:
+  commonName: renewal-demo.example.com
+  dnsNames:
+    - renewal-demo.example.com
+  secretName: renewal-demo-tls
+  duration: "5m"
+  renewBefore: "2m"
+  restartDeployments: true
+  issuerRef:
+    name: self-signed
+    kind: SelfSigned
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: renewal-demo-nginx-config
+  labels:
+    app: renewal-demo
+data:
+  default.conf: |
+    server {
+      listen 8443 ssl;
+      server_name _;
+      ssl_certificate     /etc/nginx/ssl/tls.crt;
+      ssl_certificate_key /etc/nginx/ssl/tls.key;
+      location / {
+        return 200 'OK - renewed cert\n';
+        add_header Content-Type text/plain;
+      }
+    }
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: renewal-demo
+  labels:
+    app: renewal-demo
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: renewal-demo
+  template:
+    metadata:
+      labels:
+        app: renewal-demo
+    spec:
+      containers:
+        - name: nginx
+          image: nginx:alpine
+          ports:
+            - containerPort: 8443
+              name: https
+          volumeMounts:
+            - name: tls
+              mountPath: /etc/nginx/ssl
+              readOnly: true
+            - name: nginx-config
+              mountPath: /etc/nginx/conf.d
+              readOnly: true
+      volumes:
+        - name: tls
+          secret:
+            secretName: renewal-demo-tls
+        - name: nginx-config
+          configMap:
+            name: renewal-demo-nginx-config
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: renewal-demo
+  labels:
+    app: renewal-demo
+spec:
+  type: ClusterIP
+  ports:
+    - port: 8443
+      targetPort: 8443
+      name: https
+  selector:
+    app: renewal-demo

@@ -1,0 +1,76 @@
+# Demo deployment that uses the certificate-managed TLS secret.
+# Apply after the Certificate (certificate-sample) so the secret "myapp-tls" exists.
+# The operator will reconcile the Certificate and create the secret; this deployment
+# mounts it and serves HTTPS on port 8443.
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: demo-nginx-tls-config
+  labels:
+    app: demo-app
+data:
+  default.conf: |
+    server {
+      listen 8443 ssl;
+      server_name _;
+      ssl_certificate     /etc/nginx/ssl/tls.crt;
+      ssl_certificate_key /etc/nginx/ssl/tls.key;
+      location / {
+        return 200 'OK - TLS from certificate-manager\n';
+        add_header Content-Type text/plain;
+      }
+    }
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: demo-app
+  labels:
+    app: demo-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: demo-app
+  template:
+    metadata:
+      labels:
+        app: demo-app
+    spec:
+      containers:
+        - name: nginx
+          image: nginx:alpine
+          ports:
+            - containerPort: 8443
+              name: https
+          volumeMounts:
+            - name: tls
+              mountPath: /etc/nginx/ssl
+              readOnly: true
+            - name: nginx-config
+              mountPath: /etc/nginx/conf.d
+              readOnly: true
+      volumes:
+        # Secret created by the Certificate (certificate-sample) with secretName: myapp-tls
+        - name: tls
+          secret:
+            secretName: myapp-tls
+        - name: nginx-config
+          configMap:
+            name: demo-nginx-tls-config
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: demo-app
+  labels:
+    app: demo-app
+spec:
+  type: ClusterIP
+  ports:
+    - port: 8443
+      targetPort: 8443
+      name: https
+  selector:
+    app: demo-app
