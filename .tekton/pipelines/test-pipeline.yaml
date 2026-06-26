@@ -1,0 +1,29 @@
+apiVersion: tekton.dev/v1
+kind: Pipeline
+metadata:
+  name: certificate-operator-test
+  namespace: tekton-pipelines
+spec:
+  params:
+    - name: repo-url
+      type: string
+      description: Git repository URL
+    - name: revision
+      type: string
+      description: Git revision to test
+      default: main
+  workspaces:
+    - name: shared-workspace
+      description: Workspace shared between pipeline tasks
+  tasks:
+    - name: run-tests
+      taskRef:
+        name: run-tests
+      params:
+        - name: repo-url
+          value: $(params.repo-url)
+        - name: revision
+          value: $(params.revision)
+      workspaces:
+        - name: source
+          workspace: shared-workspace

@@ -1,0 +1,49 @@
+apiVersion: tekton.dev/v1
+kind: Task
+metadata:
+  name: run-tests
+  namespace: tekton-pipelines
+spec:
+  params:
+    - name: repo-url
+      type: string
+      description: Git repository URL to clone
+    - name: revision
+      type: string
+      description: Git revision (branch, tag, or commit SHA) to checkout
+      default: main
+  workspaces:
+    - name: source
+      description: Workspace where the source code is cloned
+  steps:
+    - name: clone
+      image: alpine/git:2.43.0
+      workingDir: $(workspaces.source.path)
+      script: |
+        #!/usr/bin/env sh
+        set -e
+        git clone $(params.repo-url) .
+        git checkout $(params.revision)
+
+    - name: test
+      image: golang:1.24
+      workingDir: $(workspaces.source.path)
+      env:
+        - name: GOPATH
+          value: /go
+        - name: GOFLAGS
+          value: "-mod=mod"
+        - name: CGO_ENABLED
+          value: "0"
+      script: |
+        #!/usr/bin/env bash
+        set -euo pipefail
+
+        go mod tidy
+        go mod download
+
+        # Install controller-gen and setup-envtest into ./bin
+        make controller-gen setup-envtest
+
+        # Run unit tests (excludes e2e)
+        make test

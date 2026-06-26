@@ -1,0 +1,36 @@
+apiVersion: triggers.tekton.dev/v1beta1
+kind: TriggerTemplate
+metadata:
+  name: certificate-operator-test-template
+  namespace: tekton-pipelines
+spec:
+  params:
+    - name: repo-url
+    - name: revision
+    - name: git-ref
+  resourcetemplates:
+    - apiVersion: tekton.dev/v1
+      kind: PipelineRun
+      metadata:
+        # Unique name per run using the commit SHA
+        generateName: certificate-operator-test-
+        namespace: tekton-pipelines
+        labels:
+          tekton.dev/pipeline: certificate-operator-test
+      spec:
+        pipelineRef:
+          name: certificate-operator-test
+        params:
+          - name: repo-url
+            value: $(tt.params.repo-url)
+          - name: revision
+            value: $(tt.params.revision)
+        workspaces:
+          - name: shared-workspace
+            volumeClaimTemplate:
+              spec:
+                accessModes:
+                  - ReadWriteOnce
+                resources:
+                  requests:
+                    storage: 1Gi

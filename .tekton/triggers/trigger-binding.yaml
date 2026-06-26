@@ -1,0 +1,16 @@
+apiVersion: triggers.tekton.dev/v1beta1
+kind: TriggerBinding
+metadata:
+  name: github-push-binding
+  namespace: tekton-pipelines
+spec:
+  params:
+    # Full ref, e.g. refs/heads/main
+    - name: git-ref
+      value: $(body.ref)
+    # Clone URL of the repository
+    - name: repo-url
+      value: $(body.repository.clone_url)
+    # The HEAD commit SHA of the push
+    - name: revision
+      value: $(body.after)
