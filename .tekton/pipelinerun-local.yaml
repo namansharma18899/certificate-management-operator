@@ -1,0 +1,45 @@
+# Use this file to manually trigger a test run on a local minikube cluster.
+# Apply with: kubectl apply -f .tekton/pipelinerun-local.yaml
+#
+# Each apply must use a unique name (or use generateName) since a completed
+# PipelineRun cannot be re-run in-place.
+apiVersion: tekton.dev/v1
+kind: PipelineRun
+metadata:
+  generateName: certificate-operator-tests-local-
+  namespace: default
+spec:
+  pipelineSpec:
+    params:
+      - name: repo-url
+        type: string
+      - name: revision
+        type: string
+    workspaces:
+      - name: source
+    tasks:
+      - name: run-tests
+        taskRef:
+          name: run-tests
+        params:
+          - name: repo-url
+            value: $(params.repo-url)
+          - name: revision
+            value: $(params.revision)
+        workspaces:
+          - name: source
+            workspace: source
+  params:
+    - name: repo-url
+      value: "https://github.com/namansharma18899/certificate-management-operator.git"
+    - name: revision
+      value: "main"
+  workspaces:
+    - name: source
+      volumeClaimTemplate:
+        spec:
+          accessModes:
+            - ReadWriteOnce
+          resources:
+            requests:
+              storage: 1Gi

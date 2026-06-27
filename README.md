@@ -56,7 +56,17 @@ A controller for Certificate resources that integrates with cert-manager or hand
 
 ### Option B: Minikube
 
-1. **Start a cluster:** `minikube start`
+**Prerequisites:** Docker Desktop must be installed and **running**. On Apple Silicon (M1/M2/M3), VirtualBox is not supported — Minikube must use the Docker driver.
+
+1. **Start Docker Desktop**, then create a cluster:
+   ```bash
+   # One-time: avoid VirtualBox auto-selection on Apple Silicon
+   minikube config set driver docker
+
+   minikube start --driver=docker --memory 6144 --cpus 2
+   ```
+   If you see `DRV_UNSUPPORTED_OS: The driver 'virtualbox' is not supported on darwin/arm64`, Docker is not running or the driver was not set to `docker`.
+
 2. **Install and run** (same as above): `make install` then `make run` in the project directory.
 3. **Apply sample and verify** as in step 4 above.
 4. **Stop:** `minikube stop` or `minikube delete`.
